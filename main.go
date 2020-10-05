@@ -11,13 +11,12 @@ import (
 	"image/color"
 	"log"
 	"strings"
+
+	"github.com/atemmel/anniversary/pkg/common"
 )
 
 const (
-	WindowWidth = 1280
-	WindowHeight = 720
-
-	ChatWidth = WindowWidth
+	ChatWidth = common.WindowWidth
 	ChatHeight = 300
 )
 
@@ -53,7 +52,7 @@ func DrawChat(chat, screen *ebiten.Image) {
 	opt := &ebiten.DrawImageOptions{}
 	joined := strings.Join(messages, "\n")
 	rect := text.BoundString(chatFont, joined)
-	rect.Add(image.Point{0, WindowHeight - rect.Bounds().Dy() * 2})
+	rect.Add(image.Point{0, common.WindowHeight - rect.Bounds().Dy() * 2})
 	opt.GeoM.Translate(0, float64(rect.Max.Y))
 	subimg, _ := ebiten.NewImageFromImage(screen.SubImage(rect), ebiten.FilterDefault)
 	subimg.Fill(chatBackgroundColor)
@@ -68,7 +67,7 @@ func DrawChat(chat, screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return WindowWidth, WindowHeight
+	return common.WindowWidth, common.WindowHeight
 }
 
 func NewChatImage() *ebiten.Image {
@@ -98,15 +97,29 @@ func LoadFont(path string) error {
 }
 
 func main() {
+	/*
 	chatImage = NewChatImage()
 	err := LoadFont("./MonsterFriendFore.otf")
 	if err != nil {
 		log.Fatal(err)
 	}
 	messages = append(messages, "SOMEONE: Tjo", "ASDF: Asdsd dfdsfds", "JSDFSDFSDF: QWE QWE QW EQWE ")
-	ebiten.SetWindowSize(WindowWidth, WindowHeight)
+	ebiten.SetWindowSize(common.WindowWidth, common.WindowHeight)
 	ebiten.SetWindowTitle("Anniversary")
 	if err := ebiten.RunGame(&Game{}); err != nil {
+		log.Fatal(err)
+	}
+	*/
+
+	g := common.CreateGame()
+	g.Load("./resources/tilemaps/event.json", 0)
+	g.Audio = common.NewAudio()
+	g.PlayAudio()
+	ebiten.SetWindowSize(common.WindowWidth, common.WindowHeight)
+	ebiten.SetWindowTitle("Anniversary")
+	ebiten.SetRunnableOnUnfocused(true)
+	ebiten.SetFullscreen(true)
+	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
 }
