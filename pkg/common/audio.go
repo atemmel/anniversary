@@ -9,9 +9,15 @@ import (
 
 const volume = 0.2
 
+const(
+	TitleMusic = 0
+	OverWorldMusic = 1
+)
+
 type Audio struct {
 	audioContext *audio.Context
 	audioPlayer *audio.Player
+	titlePlayer *audio.Player
 	thudPlayer *audio.Player
 	doorPlayer *audio.Player
 }
@@ -38,7 +44,7 @@ func NewAudio() Audio {
 	if err != nil {
 		panic(err)
 	}
-	loop := audio.NewInfiniteLoop(src, src.Length() - 2500000)
+	loop := audio.NewInfiniteLoop(src, src.Length() )
 	player, err := audio.NewPlayer(ctx, loop)
 	if err != nil {
 		panic(err)
@@ -60,13 +66,25 @@ func NewAudio() Audio {
 		panic(err)
 	}
 
+	src, err = loadMp3(ctx, "resources/audio/title.mp3")
+	if err != nil {
+		panic(err)
+	}
+	loop = audio.NewInfiniteLoop(src, src.Length() - 1820000)
+	title, err := audio.NewPlayer(ctx, loop)
+	if err != nil {
+		panic(err)
+	}
+
 	player.SetVolume(volume)
+	title.SetVolume(volume)
 	thud.SetVolume(volume)
 	door.SetVolume(volume)
 
 	return Audio{
 		ctx,
 		player,
+		title,
 		thud,
 		door,
 	}

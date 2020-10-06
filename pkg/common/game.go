@@ -14,6 +14,7 @@ import (
 type Game struct {
 	Ows OverworldState
 	As GameState
+	Is *IntroState
 	Player Player
 	//Client Client
 	Rend Renderer
@@ -22,7 +23,11 @@ type Game struct {
 
 func CreateGame() *Game {
 	g := &Game{}
-	g.As = &g.Ows
+	g.Audio = NewAudio()
+	g.Is = NewIntroState()
+	g.ChangeState(g.Is)
+	g.As = g.Is
+	//g.As = &g.Ows
 	g.Player.Id = 1
 	var err error
 	g.Ows.PlayerTextures = make([]*ebiten.Image, len(NameIndexMap))
@@ -160,6 +165,14 @@ func (g *Game) DrawPlayer(player *Player) {
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return WindowWidth, WindowHeight
+}
+
+func (g *Game) ChangeState(state GameState) {
+	if g.As != nil {
+		g.As.ChangeFrom(g)
+	}
+	g.As = state
+	g.As.ChangeTo(g)
 }
 
 func (g *Game) PlayAudio() {
