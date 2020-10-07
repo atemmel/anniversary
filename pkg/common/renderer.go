@@ -46,8 +46,8 @@ type Renderer struct {
 	Cam Camera
 }
 
-func NewRenderer(destWidth int, destHeight int, screenWidth int, screenHeight int) Renderer {
-	img, _ := ebiten.NewImage(destWidth, destHeight, ebiten.FilterDefault)
+func NewRenderer(screenWidth int, screenHeight int) Renderer {
+	img, _ := ebiten.NewImage(screenWidth, screenHeight, ebiten.FilterDefault)
 	return Renderer {
 		img,
 		make([]RenderTarget, 0),

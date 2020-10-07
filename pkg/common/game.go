@@ -27,6 +27,7 @@ func CreateGame() *Game {
 	g.Ows = NewOverworldState(g.Player.Id)
 	g.Sel = NewSelectionState()
 	g.ChangeState(g.Is)
+	g.Rend = NewRenderer(WindowWidth, WindowHeight)
 	return g
 }
 
@@ -88,11 +89,6 @@ func (g *Game) Load(str string, entrypoint int) {
 	g.Player.Y = g.Ows.tileMap.Entries[index].Y
 	g.Player.Gx = float64(g.Player.X * TileSize)
 	g.Player.Gy = float64(g.Player.Y * TileSize)
-	g.Rend = NewRenderer(WindowWidth,
-		WindowHeight,
-		WindowWidth,
-		WindowHeight,
-	)
 }
 
 func (g *Game) Save() {
