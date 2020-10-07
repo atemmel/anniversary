@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"log"
+	"strconv"
 )
 
 type GameState interface {
@@ -20,6 +22,28 @@ type OverworldState struct {
 	PlayerNameTags map[int]*ebiten.Image
 	tileMap TileMap
 	tileset *ebiten.Image
+}
+
+func NewOverworldState(playerId int) *OverworldState {
+	ows := &OverworldState{}
+	var err error
+	ows.PlayerTextures = make([]*ebiten.Image, len(NameIndexMap))
+	ows.PlayerNameTags = make(map[int]*ebiten.Image)
+	for i := range NameIndexMap {
+		ows.PlayerTextures[i], _, err = ebitenutil.NewImageFromFile("./resources/textures/player" + strconv.Itoa(i) + ".png", ebiten.FilterDefault)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ows.PlayerNameTags[playerId] = NewNameTag(NameIndexMap[playerId])
+
+	ows.tileset, _, err = ebitenutil.NewImageFromFile("./resources/textures/tileset1.png", ebiten.FilterDefault)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+  return ows
 }
 
 func holdingSprint() bool {

@@ -56,7 +56,7 @@ func (is *IntroState) Update(g *Game) error {
 	if accept() {
 		img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
 		is.Draw(g, img)
-		g.ChangeState(NewTransitionState(img, is, &g.Ows, 40))
+		g.ChangeState(NewTransitionState(img, is, g.Sel, 40))
 		//g.ChangeState(&g.Ows)
 	}
 	return nil

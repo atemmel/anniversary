@@ -16,7 +16,7 @@ var NameTagFont font.Face = nil
 func NewNameTag(str string) *ebiten.Image {
 	const nameTagSize = 12
 	if NameTagFont == nil {
-		NameTagFont = loadFont("./MonsterFriendFore.otf", nameTagSize)
+		NameTagFont = loadFont("resources/MonsterFriendFore.otf", nameTagSize)
 	}
 
 	rect := text.BoundString(NameTagFont, str)

@@ -4,17 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"io/ioutil"
 	"image"
-	"log"
-	"strconv"
 )
 
 type Game struct {
-	Ows OverworldState
 	As GameState
+	Ows *OverworldState
 	Is *IntroState
+	Sel *SelectionState
 	Player Player
 	//Client Client
 	Rend Renderer
@@ -23,29 +21,12 @@ type Game struct {
 
 func CreateGame() *Game {
 	g := &Game{}
+	g.Player.Id = 1
 	g.Audio = NewAudio()
 	g.Is = NewIntroState()
+	g.Ows = NewOverworldState(g.Player.Id)
+	g.Sel = NewSelectionState()
 	g.ChangeState(g.Is)
-	g.As = g.Is
-	//g.As = &g.Ows
-	g.Player.Id = 1
-	var err error
-	g.Ows.PlayerTextures = make([]*ebiten.Image, len(NameIndexMap))
-	g.Ows.PlayerNameTags = make(map[int]*ebiten.Image)
-	for i := range NameIndexMap {
-		g.Ows.PlayerTextures[i], _, err = ebitenutil.NewImageFromFile("./resources/textures/player" + strconv.Itoa(i) + ".png", ebiten.FilterDefault)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	g.Ows.PlayerNameTags[g.Player.Id] = NewNameTag(NameIndexMap[g.Player.Id])
-
-	g.Ows.tileset, _, err = ebitenutil.NewImageFromFile("./resources/textures/tileset1.png", ebiten.FilterDefault)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return g
 }
 
@@ -126,7 +107,7 @@ func (g *Game) DrawPlayer(player *Player) {
 	playerOpt := &ebiten.DrawImageOptions{}
 	playerOpt.GeoM.Scale(2,2)
 
-	if g.Player.dir == Left {
+	if g.Player.dir == Left || g.Player.dir == Down {
 		playerOpt.GeoM.Scale(-1, 1)
 		playerOpt.GeoM.Translate(64, 0)
 	}

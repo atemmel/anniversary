@@ -43,7 +43,7 @@ func (t *TransitionState) Update(g *Game) error {
 		t.magnitude = -1;
 		return nil
 	} else if t.Ticks == 0 {
-		g.As = &g.Ows
+		g.As = t.toState
 		return nil
 	}
 	scale := float64(t.Ticks) / float64(t.nTransitionTicks)
