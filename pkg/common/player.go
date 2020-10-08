@@ -1,14 +1,65 @@
 package common
 
 import (
+	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var(
 	NameIndexMap = [...]string{
-		"",
+		"GUEST",
 		"DAVID",
+		"FREDDO",
+		"FOX",
+		"NORDA",
+		"1",
+		"2",
+		"3",
+		"4",
+		"5",
+		"6",
+		"7",
+		"7",
+		"7",
+		"7",
+		"7",
+		"7",
+		"7",
 	}
+
+	PlayerResources = [len(NameIndexMap)]string{
+		ResourceDir + "textures/player0.png",
+		ResourceDir + "textures/player1.png",
+		ResourceDir + "textures/player2.png",
+		ResourceDir + "textures/player3.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+		ResourceDir + "textures/player4.png",
+	}
+
+	PlayerImgs = [len(PlayerResources)]*ebiten.Image{}
 )
+
+func loadPlayerImgs() {
+	for i := range PlayerResources {
+		img, _, err := ebitenutil.NewImageFromFile(PlayerResources[i], ebiten.FilterDefault)
+		if err != nil {
+			panic(err)
+		}
+		PlayerImgs[i] = img
+	}
+}
 
 type Direction int
 

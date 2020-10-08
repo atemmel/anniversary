@@ -120,7 +120,7 @@ func (g *Game) DrawPlayer(player *Player) {
 
 	g.Rend.Draw(&RenderTarget{
 		playerOpt,
-		g.Ows.PlayerTextures[g.Player.Id],
+		PlayerImgs[g.Player.Id],
 		&playerRect,
 		x,
 		y,

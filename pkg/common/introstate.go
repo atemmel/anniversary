@@ -32,11 +32,11 @@ type IntroState struct {
 }
 
 func NewIntroState() *IntroState {
-	tile, _, err := ebitenutil.NewImageFromFile("resources/textures/tile.png", ebiten.FilterDefault)
+	tile, _, err := ebitenutil.NewImageFromFile(ResourceDir + "textures/tile.png", ebiten.FilterDefault)
 	if err != nil {
 		panic(err)
 	}
-	logo, _, err := ebitenutil.NewImageFromFile("resources/textures/logo.png", ebiten.FilterDefault)
+	logo, _, err := ebitenutil.NewImageFromFile(ResourceDir + "textures/logo.png", ebiten.FilterDefault)
 	if err != nil {
 		panic(err)
 	}

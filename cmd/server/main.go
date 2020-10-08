@@ -170,8 +170,15 @@ func startWhisperGame(s *discordgo.Session) {
 	sendStartMessage(s, reds[0], blus[0])
 
 	for i := 0; i < max; i++ {
-		r := reds[i]
-		b := blus[i]
+		var r WhisperParticipant
+		var b WhisperParticipant
+
+		if i < len(reds) {
+			r = reds[i]
+		}
+		if i < len(reds) {
+			b = blus[i]
+		}
 
 		assertMove(s, guildId, b.id, &whisperChannelBluId)
 		assertMove(s, guildId, r.id, &whisperChannelRedId)
