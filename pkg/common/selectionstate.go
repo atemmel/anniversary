@@ -12,10 +12,9 @@ type character struct {
 }
 
 type SelectionState struct {
-	images []*ebiten.Image
 	hand *ebiten.Image
 	disc *ebiten.Image
-	border *ebiten.Image
+	grid *ebiten.Image
 	readytofight *ebiten.Image
 	handanim handanim
 
@@ -71,13 +70,13 @@ func NewSelectionState() *SelectionState {
 	scaledhand, _ := ebiten.NewImage(int(float64(x) * factor), int(float64(y) * factor), ebiten.FilterDefault)
 	x, y = disc.Size()
 	scaleddisc, _ := ebiten.NewImage(int(float64(x) * factor), int(float64(y) * factor), ebiten.FilterDefault)
-	x, y = border.Size()
-	scaledborder, _ := ebiten.NewImage(int(float64(x) * factor), int(float64(y) * factor), ebiten.FilterDefault)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Scale(factor, factor)
 	scaledhand.DrawImage(hand, opt)
 	scaleddisc.DrawImage(disc, opt)
-	scaledborder.DrawImage(border, opt)
+
+	grid := buildGrid(15, border)
+
 	x, y = scaledhand.Size()
 	handanim := handanim{
 		50,
@@ -89,13 +88,42 @@ func NewSelectionState() *SelectionState {
 		false,
 	}
 	return &SelectionState{
-		make([]*ebiten.Image, 0),
 		scaledhand,
 		scaleddisc,
-		border,
+		grid,
 		readytofight,
 		handanim,
 	}
+}
+
+func buildGrid(m int, border *ebiten.Image) *ebiten.Image {
+	const gridW = 8
+	n := 0
+	rem := m
+	for ; rem > gridW; rem -= gridW {
+		n++
+	}
+
+	borderW, borderH := border.Size()
+	img, _ := ebiten.NewImage(borderW * gridW, borderH * (n + 1), ebiten.FilterDefault)
+
+	for y := 0; y < n; y++ {
+		for x := 0; x < gridW; x++ {
+			opt := &ebiten.DrawImageOptions{}
+			opt.GeoM.Translate(float64(x * borderW), float64(y * borderH))
+			img.DrawImage(border, opt)
+		}
+	}
+
+	offsetx := (rem * gridW) / 2
+
+	for x := 0; x < rem; x++ {
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(float64(x * borderW + offsetx), float64(n * borderH))
+		img.DrawImage(border, opt)
+	}
+
+	return img
 }
 
 func (s *SelectionState) GetInputs(g *Game) error {
@@ -116,7 +144,7 @@ func (s *SelectionState) GetInputs(g *Game) error {
 	}
 
 	if accept() {
-		b1 := image.Rect(0, 0, s.border.Bounds().Dx(), s.border.Bounds().Dy())
+		b1 := image.Rect(0, 0, s.grid.Bounds().Dx(), s.grid.Bounds().Dy())
 		p1 := image.Point{int(s.handanim.x), int(s.handanim.y)}
 		if p1.In(b1) {
 			img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
@@ -143,12 +171,21 @@ func (s *SelectionState) Draw(g *Game, screen *ebiten.Image) {
 	opt := ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(s.handanim.x, s.handanim.y)
 	rect := image.Rect(int(s.handanim.tx), int(s.handanim.ty), int(s.handanim.tx + s.handanim.w), int(s.handanim.ty + s.handanim.h))
-	screen.DrawImage(s.border, &ebiten.DrawImageOptions{})
+	drawGrid(s.grid, screen)
 	screen.DrawImage(s.disc, &opt)
 	if s.handanim.selected {
 		screen.DrawImage(s.readytofight, &ebiten.DrawImageOptions{})
 	}
 	screen.DrawImage(s.hand.SubImage(rect).(*ebiten.Image), &opt)
+}
+
+func drawGrid(g *ebiten.Image, screen *ebiten.Image) {
+	opt := &ebiten.DrawImageOptions{}
+	w, _ := g.Size()
+	x := WindowWidth / 2 - w / 2
+	y := 40
+	opt.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(g, opt)
 }
 
 func (s *SelectionState) ChangeFrom(g *Game) {
