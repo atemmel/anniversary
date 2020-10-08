@@ -1,7 +1,6 @@
 package common
 
 import(
-	"fmt"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"image"
@@ -25,10 +24,12 @@ type SelectionState struct {
 	readytofight *ebiten.Image
 	handanim handanim
 	rects []image.Rectangle
+	selectedText *ebiten.Image
 }
 
 type handanim struct {
 	x, y, tx, ty, w, h float64
+	bx, by float64
 	selected bool
 }
 
@@ -49,8 +50,10 @@ func (h *handanim) Move(x, y float64) {
 	}
 }
 
-func (h *handanim) Place() {
-	//h.tx = 
+func (h *handanim) Place(r image.Rectangle) {
+	h.selected = true
+	h.bx = float64(r.Min.X)
+	h.by = float64(r.Min.Y)
 }
 
 func NewSelectionState() *SelectionState {
@@ -91,6 +94,8 @@ func NewSelectionState() *SelectionState {
 		0,
 		float64(x) / 3,
 		float64(y),
+		0,
+		0,
 		false,
 	}
 
@@ -101,13 +106,14 @@ func NewSelectionState() *SelectionState {
 		readytofight,
 		handanim,
 		buildRects(len(PlayerImgs), border),
+		nil,
 	}
 }
 
 func buildRects(m int, border *ebiten.Image) []image.Rectangle {
 	rects := make([]image.Rectangle, 0)
 
-	bw, by := border.Size()
+	bw, bh := border.Size()
 	w := gridW * bw
 	x := WindowWidth / 2 - w / 2
 	y := gridOffsetY
@@ -120,7 +126,7 @@ func buildRects(m int, border *ebiten.Image) []image.Rectangle {
 
 	for i := 0; i < rows; i++ {
 		for j := 0; j < gridW; j++ {
-			r := image.Rect(j * bw, i * by, j * bw + bw, i * by + by)
+			r := image.Rect(j * bw, i * bh, j * bw + bw, i * bh + bh)
 			r = r.Add(image.Point{x, y})
 			rects = append(rects, r)
 		}
@@ -128,10 +134,11 @@ func buildRects(m int, border *ebiten.Image) []image.Rectangle {
 
 	w = rem * bw
 	x = WindowWidth / 2 - w / 2
-	y = gridOffsetY + by * rows
+	y = gridOffsetY + bh * rows
 
-	for j := 0; j < gridW; j++ {
-		r := image.Rect(x + (j * bw), y, x + ((j + 1) * bw), y + by)
+	for j := 0; j < rem; j++ {
+		r := image.Rect(j * bw, 0, j * bw + bw, bh)
+		r = r.Add(image.Point{x, y})
 		rects = append(rects, r)
 	}
 
@@ -197,13 +204,23 @@ func (s *SelectionState) GetInputs(g *Game) error {
 		s.handanim.Move(handvel, 0)
 	}
 
-	if accept() {
-		p1 := image.Point{int(s.handanim.x), int(s.handanim.y)}
+	p1 := image.Point{int(s.handanim.x), int(s.handanim.y)}
+	for i, r := range s.rects {
+		if p1.In(r) {
+			g.Player.Id = i
+			g.Ows.SetPlayerTag(i)
+			s.selectedText = g.Ows.PlayerNameTags[i]
+			break
+		}
+	}
+
+	if accept() && !s.handanim.selected {
 		for i, r := range s.rects {
 			if p1.In(r) {
-				fmt.Println(i)
 				g.Player.Id = i
 				g.Ows.SetPlayerTag(i)
+				s.selectedText = g.Ows.PlayerNameTags[i]
+				s.handanim.Place(r)
 				img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
 				s.Draw(g, img)
 				g.ChangeState(NewTransitionState(img, s, g.Ows, 40))
@@ -227,16 +244,34 @@ func (s *SelectionState) Update(g *Game) error {
 func (s *SelectionState) Draw(g *Game, screen *ebiten.Image) {
 	screen.Fill(color.Black)
 	drawGrid(s.grid, screen)
+	if s.selectedText != nil {
+		drawSelectedText(s.selectedText, screen)
+	}
 	hopt := ebiten.DrawImageOptions{}
 	hopt.GeoM.Translate(s.handanim.x, s.handanim.y)
 	dopt := ebiten.DrawImageOptions{}
-	dopt.GeoM.Translate(s.handanim.x - 5, s.handanim.y - 9)
+	if !s.handanim.selected {
+		dopt.GeoM.Translate(s.handanim.x - 5, s.handanim.y - 9)
+	} else {
+		dopt.GeoM.Translate(s.handanim.bx, s.handanim.by)
+	}
 	screen.DrawImage(s.disc, &dopt)
 	if s.handanim.selected {
-		screen.DrawImage(s.readytofight, &ebiten.DrawImageOptions{})
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(0, 100)
+		screen.DrawImage(s.readytofight, opt)
 	}
 	rect := image.Rect(int(s.handanim.tx), int(s.handanim.ty), int(s.handanim.tx + s.handanim.w), int(s.handanim.ty + s.handanim.h))
 	screen.DrawImage(s.hand.SubImage(rect).(*ebiten.Image), &hopt)
+}
+
+func drawSelectedText(t *ebiten.Image, screen *ebiten.Image) {
+	opt := &ebiten.DrawImageOptions{}
+	w, h := t.Size()
+	x := WindowWidth / 2 - w / 2
+	y := WindowHeight - 40 - h
+	opt.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(t, opt)
 }
 
 func drawGrid(g *ebiten.Image, screen *ebiten.Image) {
