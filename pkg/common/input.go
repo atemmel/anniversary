@@ -38,10 +38,14 @@ func movingRight() bool {
 }
 
 func accept() bool {
-	return inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeyE) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsGamepadButtonJustPressed(0, ebiten.GamepadButton1)
+	return inpututil.IsKeyJustPressed(ebiten.KeyE) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsGamepadButtonJustPressed(0, ebiten.GamepadButton1)
 }
 
 //TODO: Don't forget the gamepad
 func back() bool {
 	return inpututil.IsKeyJustPressed(ebiten.KeyShift) || inpututil.IsKeyJustPressed(ebiten.KeyQ) || inpututil.IsKeyJustPressed(ebiten.KeyTab)
+}
+
+func start() bool {
+	return inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 }

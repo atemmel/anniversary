@@ -255,6 +255,21 @@ func (s *SelectionState) GetInputs(g *Game) error {
 		s.handanim.Pickup()
 	}
 
+	if start() {
+		p1 := image.Point{int(s.handanim.bx), int(s.handanim.by)}
+		if s.handanim.selected {
+			for i, r := range s.rects {
+				if p1.In(r) {
+					g.Player.Id = i
+					g.Ows.SetPlayerTag(i)
+					img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
+					s.Draw(g, img)
+					g.ChangeState(NewTransitionState(img, s, g.Ows, 40))
+				}
+			}
+		}
+	}
+
 	if accept() {
 		if !s.handanim.selected {
 			for i, r := range s.rects {
