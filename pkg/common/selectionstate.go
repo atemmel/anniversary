@@ -278,11 +278,6 @@ func (s *SelectionState) GetInputs(g *Game) error {
 					g.Ows.SetPlayerTag(i)
 					s.selectedText = g.Ows.PlayerNameTags[i]
 					s.handanim.Place(r)
-					/*
-					img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
-					s.Draw(g, img)
-					g.ChangeState(NewTransitionState(img, s, g.Ows, 40))
-					*/
 				}
 			}
 		} else {

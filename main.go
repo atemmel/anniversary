@@ -14,6 +14,7 @@ func main() {
 	ebiten.SetWindowTitle("Anniversary")
 	ebiten.SetRunnableOnUnfocused(true)
 	ebiten.SetFullscreen(true)
+	ebiten.SetCursorMode(ebiten.CursorModeHidden)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
