@@ -30,6 +30,7 @@ type SelectionState struct {
 type handanim struct {
 	x, y, tx, ty, w, h float64
 	bx, by float64
+	gw, gh float64
 	selected bool
 }
 
@@ -52,8 +53,26 @@ func (h *handanim) Move(x, y float64) {
 
 func (h *handanim) Place(r image.Rectangle) {
 	h.selected = true
-	h.bx = float64(r.Min.X)
-	h.by = float64(r.Min.Y)
+	h.tx = 0
+	h.bx = float64(r.Min.X) + h.gw / 4 - 4
+	h.by = float64(r.Min.Y) + h.gh / 4 - 4
+}
+
+func (h *handanim) Hover() {
+	h.tx = h.w
+}
+
+func (h *handanim) Pointing() (int, int) {
+	return int(h.x) + 16, int(h.y) + 8
+}
+
+func (h *handanim) NotHover() {
+	h.tx = 0
+}
+
+func (h *handanim) Pickup() {
+	h.selected = false
+	h.tx = h.w * 2
 }
 
 func NewSelectionState() *SelectionState {
@@ -77,8 +96,8 @@ func NewSelectionState() *SelectionState {
 	const factor = 0.5
 	x, y := hand.Size()
 	scaledhand, _ := ebiten.NewImage(int(float64(x) * factor), int(float64(y) * factor), ebiten.FilterDefault)
-	x, y = disc.Size()
-	scaleddisc, _ := ebiten.NewImage(int(float64(x) * factor), int(float64(y) * factor), ebiten.FilterDefault)
+	bx, by := disc.Size()
+	scaleddisc, _ := ebiten.NewImage(int(float64(bx) * factor), int(float64(by) * factor), ebiten.FilterDefault)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Scale(factor, factor)
 	scaledhand.DrawImage(hand, opt)
@@ -87,6 +106,7 @@ func NewSelectionState() *SelectionState {
 	grid := buildGrid(len(PlayerImgs), border)
 
 	x, y = scaledhand.Size()
+	gx, gy := border.Size()
 	handanim := handanim{
 		50,
 		50,
@@ -96,6 +116,8 @@ func NewSelectionState() *SelectionState {
 		float64(y),
 		0,
 		0,
+		float64(gx),
+		float64(gy),
 		false,
 	}
 
@@ -204,34 +226,58 @@ func (s *SelectionState) GetInputs(g *Game) error {
 		s.handanim.Move(handvel, 0)
 	}
 
-	p1 := image.Point{int(s.handanim.x), int(s.handanim.y)}
-	for i, r := range s.rects {
-		if p1.In(r) {
-			g.Player.Id = i
-			g.Ows.SetPlayerTag(i)
-			s.selectedText = g.Ows.PlayerNameTags[i]
-			break
-		}
-	}
+	hx, hy := s.handanim.Pointing()
+	p1 := image.Point{hx, hy}
 
-	if accept() && !s.handanim.selected {
+	if !s.handanim.selected {
 		for i, r := range s.rects {
 			if p1.In(r) {
 				g.Player.Id = i
 				g.Ows.SetPlayerTag(i)
 				s.selectedText = g.Ows.PlayerNameTags[i]
-				s.handanim.Place(r)
-				img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
-				s.Draw(g, img)
-				g.ChangeState(NewTransitionState(img, s, g.Ows, 40))
+				break
 			}
 		}
-		/*
-		s.handanim.tx += s.handanim.w
-		if s.handanim.tx == s.handanim.w * 3 {
-			s.handanim.tx = 0
+	}
+
+	if s.handanim.selected {
+		w, h := s.disc.Size()
+		r := image.Rect(0, 0, w, h)
+		r = r.Add(image.Point{int(s.handanim.bx), int(s.handanim.by)})
+		if p1.In(r) {
+			s.handanim.Hover()
+		} else {
+			s.handanim.NotHover()
 		}
-		*/
+	}
+
+	if back() && s.handanim.selected {
+		s.handanim.Pickup()
+	}
+
+	if accept() {
+		if !s.handanim.selected {
+			for i, r := range s.rects {
+				if p1.In(r) {
+					g.Player.Id = i
+					g.Ows.SetPlayerTag(i)
+					s.selectedText = g.Ows.PlayerNameTags[i]
+					s.handanim.Place(r)
+					/*
+					img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
+					s.Draw(g, img)
+					g.ChangeState(NewTransitionState(img, s, g.Ows, 40))
+					*/
+				}
+			}
+		} else {
+			w, h := s.disc.Size()
+			r := image.Rect(0, 0, w, h)
+			r = r.Add(image.Point{int(s.handanim.bx), int(s.handanim.by)})
+			if p1.In(r) {
+				s.handanim.Pickup()
+			}
+		}
 	}
 
 	return nil
