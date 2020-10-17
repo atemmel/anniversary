@@ -11,7 +11,12 @@ import(
 var(
 	SpinnerFont font.Face = nil
 )
+
+
 const spinnerFontSize = 14
+const padimgw = 300
+const padimgh = 2
+const vspace = 10
 
 type SpinnerState struct {
 	spinnerState *ebiten.Image
@@ -52,10 +57,6 @@ func buildSpinnerTexture(strs []string) *ebiten.Image {
 	for i := range bounds {
 		bounds[i] = text.BoundString(SpinnerFont, strs[i])
 	}
-
-	const padimgw = 300
-	const padimgh = 2
-	const vspace = 10
 	padimg, _ := ebiten.NewImage(padimgw, padimgh, ebiten.FilterDefault)
 	padimg.Fill(color.Black)
 
@@ -88,14 +89,24 @@ func buildSpinnerTexture(strs []string) *ebiten.Image {
 }
 
 func (s *SpinnerState) Draw(g *Game, screen *ebiten.Image) {
-	screen.Fill(color.RGBA{255,255,0,255})
+	x, y := s.roll.clipped.Size()
+	x = -x
+	y = -y
+	x /= 2
+	y /= 2
+	x += WindowWidth / 2
+	y += WindowHeight / 2
+
+	screen.Fill(color.RGBA{50,155,0,255})
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(0, s.roll.y)
 	opt2 := &ebiten.DrawImageOptions{}
 	opt2.GeoM.Translate(0, s.roll.y2)
 	s.roll.clipped.DrawImage(s.roll.img, opt)
 	s.roll.clipped.DrawImage(s.roll.img, opt2)
-	screen.DrawImage(s.roll.clipped, &ebiten.DrawImageOptions{})
+	finalopt := &ebiten.DrawImageOptions{}
+	finalopt.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(s.roll.clipped, finalopt)
 }
 
 func (s *SpinnerState) Update(g *Game) error {
