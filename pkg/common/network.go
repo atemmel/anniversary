@@ -10,13 +10,13 @@ const ServerConfigFile = "config_server.json"
 const ClientConfigFile = "config_client.json"
 
 type ServerConfig struct {
-	Url string
 	Port string
 }
 
 type ClientConfig struct {
 	ServerUrl string
 	ServerPort string
+	DiscordName string
 }
 
 //TODO A lot of code dupe here

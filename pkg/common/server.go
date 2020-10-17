@@ -5,11 +5,10 @@ import (
 	"encoding/json"	//TODO Change to protobuf implementation
 	"log"
 	"net"
-	"strconv"
 	"sync"
 )
 
-const MaxConnections = 16
+const MaxConnections = 24
 
 type Message struct {
 	author net.Conn
@@ -48,7 +47,7 @@ func (s *Server) Serve() {
 		log.Println("Could not read server config!")
 		panic(err)
 	}
-	s.listener, err = net.Listen("tcp", s.conf.Url + ":" + s.conf.Port)
+	s.listener, err = net.Listen("tcp", ":" + s.conf.Port)
 	if err != nil {
 		panic(err)
 	}
@@ -112,8 +111,26 @@ func (s *Server) designate(conn net.Conn, id int) {
 	s.conns[conn] = id
 	s.connsMutex.Unlock()
 
-	msg := strconv.Itoa(id) + "\n"
-	conn.Write([]byte(msg) )
+
+	r := bufio.NewReader(conn)
+	bytes, err := r.ReadBytes('\n')
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	msg := &JoinMessage{}
+	err = json.Unmarshal(bytes, msg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	msg.Id = id
+	bytes, _ = json.Marshal(msg)
+	bytes = append(bytes, '\n')
+
+	conn.Write(bytes)
 }
 
 func (s *Server) isValidMessage(bytes []byte) bool {

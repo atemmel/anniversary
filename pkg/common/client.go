@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"net"
-	"strconv"
 	"sync"
 )
 
@@ -34,6 +33,11 @@ type ClientMessage struct {
 	Player *Player
 }
 
+type JoinMessage struct {
+	Name string
+	Id int
+}
+
 func CreateClient() Client {
 	return Client{
 		ClientConfig{},
@@ -47,21 +51,21 @@ func CreateClient() Client {
 	}
 }
 
-func (c *Client) Connect() int {
+func (c *Client) Connect() *JoinMessage {
 	log.Println("Attempting to connect to server...")
 	var err error
 
 	c.conf, err = ReadClientConfig()
 	if err != nil {
 		log.Println("Could not read client config")
-		return -1
+		return nil
 	}
 
 	c.conn, err = net.Dial("tcp", c.conf.ServerUrl + ":" + c.conf.ServerPort)
 	if err != nil {
 		log.Println("Connection failed")
 		log.Println(err)
-		return -1
+		return nil
 	}
 
 	log.Println("Connection succeeded!")
@@ -69,19 +73,33 @@ func (c *Client) Connect() int {
 		bufio.NewReader(c.conn),
 		bufio.NewWriter(c.conn),
 	)
+
+	jmsg := &JoinMessage{}
+	jmsg.Name = c.conf.DiscordName
+	b, _ := json.Marshal(jmsg)
+	b = append(b, '\n')
+	_, err = c.rw.Write(b)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	c.rw.Flush()
+
 	data, err := c.rw.ReadBytes('\n')
 	if err != nil {
 		log.Println("Could not be given an id")
-		return -1
+		return nil
 	}
+
 	data = data[:len(data) - 1]	// Discard newline byte
-	id, err := strconv.Atoi(string(data))
+	//id, err := strconv.Atoi(string(data))
+	err = json.Unmarshal(data, jmsg)
 	if err != nil {
 		log.Println("Id given (", string(data), ") was not valid")
-		return -1
+		return nil
 	}
 	c.Active = true
-	return id
+	return jmsg
 }
 
 func (c *Client) WritePlayer(player *Player) {

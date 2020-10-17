@@ -26,7 +26,7 @@ func NewOverworldState(g *Game, playerId int) *OverworldState {
 	var err error
 	loadPlayerImgs()
 	ows.PlayerNameTags = make(map[int]*ebiten.Image)
-	ows.PlayerNameTags[g.Player.Id] = NewNameTag(NameIndexMap[g.Player.Id])
+	//ows.PlayerNameTags[g.Player.Id] = NewNameTag(g.Player.Name)
 
 	ows.tileset, _, err = ebitenutil.NewImageFromFile(ResourceDir + "textures/tileset1.png", ebiten.FilterDefault)
 	if err != nil {

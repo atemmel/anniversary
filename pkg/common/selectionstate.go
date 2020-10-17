@@ -262,6 +262,7 @@ func (s *SelectionState) GetInputs(g *Game) error {
 				if p1.In(r) {
 					g.Player.TexId = i
 					g.Ows.SetPlayerTag(i)
+					g.Ows.PlayerNameTags[i] = NewNameTag(g.Player.Name)
 					img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
 					s.Draw(g, img)
 					g.ChangeState(NewTransitionState(img, s, g.Ows, 40))

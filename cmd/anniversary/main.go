@@ -17,7 +17,12 @@ func main() {
 	ebiten.SetCursorMode(ebiten.CursorModeHidden)
 
 	g.Client = common.CreateClient()
-	g.Player.Id = g.Client.Connect()
+	jmsg := g.Client.Connect()
+	if jmsg != nil {
+		g.Player.Id = jmsg.Id
+		g.Player.Name = jmsg.Name
+	}
+
 	if g.Client.Active {
 		g.Player.Connected = true
 	}

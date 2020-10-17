@@ -1,6 +1,7 @@
 package common
 
 import(
+	"fmt"
 	"encoding/json"
 	"github.com/hajimehoshi/ebiten"
 	"io/ioutil"
@@ -87,6 +88,7 @@ func (t *TileMap) OpenFile(path string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(len(t.Collision), len(t.Tiles))
 	return nil
 }
 
