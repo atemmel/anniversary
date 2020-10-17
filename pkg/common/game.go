@@ -12,10 +12,10 @@ type Game struct {
 	As GameState
 	Ows *OverworldState
 	Is *IntroState
-	Ss *SpinnerState
+	Gss *GroupedSpinnerState
 	Sel *SelectionState
 	Player Player
-	//Client Client
+	Client Client
 	Rend Renderer
 	Audio Audio
 }
@@ -25,11 +25,11 @@ func CreateGame() *Game {
 	g.Player.Id = 1
 	g.Audio = NewAudio()
 	g.Is = NewIntroState()
-	g.Ows = NewOverworldState(g.Player.Id)
+	g.Ows = NewOverworldState(g, g.Player.TexId)
 	g.Sel = NewSelectionState()
-	g.Ss = NewSpinnerState()
-	//g.ChangeState(g.Is)
-	g.ChangeState(g.Ss)
+	//g.Gss = NewGroupedSpinnerState()
+	g.ChangeState(g.Is)
+	//g.ChangeState(g.Gss)
 	g.Rend = NewRenderer(WindowWidth, WindowHeight)
 	return g
 }
@@ -54,13 +54,11 @@ func (g *Game) TileIsOccupied(x int, y int, z int) bool {
 		return true
 	}
 
-	/*
 	for _, p := range g.Client.playerMap.players {
 		if p.X == x && p.Y == y {
 			return true
 		}
 	}
-	*/
 
 	return false
 }
@@ -106,7 +104,7 @@ func (g *Game) DrawPlayer(player *Player) {
 	playerOpt := &ebiten.DrawImageOptions{}
 	playerOpt.GeoM.Scale(2,2)
 
-	if g.Player.dir == Left || g.Player.dir == Down {
+	if player.Dir == Left || player.Dir == Down {
 		playerOpt.GeoM.Scale(-1, 1)
 		playerOpt.GeoM.Translate(64, 0)
 	}
@@ -123,7 +121,7 @@ func (g *Game) DrawPlayer(player *Player) {
 
 	g.Rend.Draw(&RenderTarget{
 		playerOpt,
-		PlayerImgs[g.Player.Id],
+		PlayerImgs[player.TexId],
 		&playerRect,
 		x,
 		y,
@@ -132,7 +130,7 @@ func (g *Game) DrawPlayer(player *Player) {
 
 	tagOpt := &ebiten.DrawImageOptions{}
 
-	tag := g.Ows.PlayerNameTags[g.Player.Id]
+	tag := g.Ows.PlayerNameTags[g.Player.TexId]
 	g.Rend.Draw(&RenderTarget{
 		tagOpt,
 		tag,

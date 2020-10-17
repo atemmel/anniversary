@@ -2,7 +2,6 @@ package common
 
 import (
 	"errors"
-	"fmt"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"log"
@@ -22,12 +21,12 @@ type OverworldState struct {
 	tileset *ebiten.Image
 }
 
-func NewOverworldState(playerId int) *OverworldState {
+func NewOverworldState(g *Game, playerId int) *OverworldState {
 	ows := &OverworldState{}
 	var err error
 	loadPlayerImgs()
 	ows.PlayerNameTags = make(map[int]*ebiten.Image)
-	ows.PlayerNameTags[playerId] = NewNameTag(NameIndexMap[playerId])
+	ows.PlayerNameTags[g.Player.Id] = NewNameTag(NameIndexMap[g.Player.Id])
 
 	ows.tileset, _, err = ebitenutil.NewImageFromFile(ResourceDir + "textures/tileset1.png", ebiten.FilterDefault)
 	if err != nil {
@@ -74,11 +73,9 @@ func (o *OverworldState) GetInputs(g *Game) error {
 func (o *OverworldState) Update(g *Game) error {
 	g.Player.Update(g)
 
-	/*
 	if g.Client.Active {
 		g.Client.WritePlayer(&g.Player)
 	}
-	*/
 
 	return nil
 }
@@ -87,7 +84,6 @@ func (o *OverworldState) Draw(g *Game, screen *ebiten.Image) {
 	o.tileMap.Draw(&g.Rend, o.tileset)
 	g.DrawPlayer(&g.Player)
 
-	/*
 	if g.Client.Active {
 		g.Client.playerMap.mutex.Lock()
 		for _, player := range g.Client.playerMap.players {
@@ -97,13 +93,9 @@ func (o *OverworldState) Draw(g *Game, screen *ebiten.Image) {
 		}
 		g.Client.playerMap.mutex.Unlock()
 	}
-	*/
 
 	g.CenterRendererOnPlayer()
 	g.Rend.Display(screen)
-	ebitenutil.DebugPrint(screen, fmt.Sprintf(
-`player.frames: %d`,
-g.Player.frames))
 }
 
 func (o *OverworldState) ChangeTo(g *Game) {

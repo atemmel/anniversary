@@ -54,9 +54,13 @@ func (is *IntroState) GetInputs(g *Game) error {
 func (is *IntroState) Update(g *Game) error {
 	is.viewport.Move(is)
 	if accept() {
-		img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
-		is.Draw(g, img)
-		g.ChangeState(NewTransitionState(img, is, g.Sel, 40))
+		if !g.Player.Connected {
+			
+		} else {
+			img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
+			is.Draw(g, img)
+			g.ChangeState(NewTransitionState(img, is, g.Sel, 40))
+		}
 		//g.ChangeState(&g.Ows)
 	}
 	return nil

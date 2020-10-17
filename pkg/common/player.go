@@ -39,6 +39,7 @@ type Direction int
 
 type Player struct {
 	Id int
+	TexId int
 	Gx float64
 	Gy float64
 	X int
@@ -49,7 +50,7 @@ type Player struct {
 	Connected bool
 	Location string
 
-	dir Direction
+	Dir Direction
 	isWalking bool
 	isRunning bool
 	frames int
@@ -93,10 +94,10 @@ func (player *Player) TryStep(dir Direction, g *Game) {
 	}
 
 	if !player.isWalking {
-		if player.dir == dir {
+		if player.Dir == dir {
 			turnCheck++
 		}
-		player.dir = dir
+		player.Dir = dir
 		player.ChangeAnim()
 		if turnCheck >= TurnCheckLimit {
 			ox, oy := player.X, player.Y
@@ -107,7 +108,7 @@ func (player *Player) TryStep(dir Direction, g *Game) {
 				if player.animationState == playerMaxCycle -1 {
 					g.Audio.PlayThud()
 				}
-				player.dir = dir
+				player.Dir = dir
 				player.Animate()
 				player.isWalking = false
 			} else {
@@ -133,13 +134,13 @@ func (player *Player) Update(g *Game) {
 
 func (player *Player) Step(g *Game) {
 	player.frames++
-	if player.dir == Up {
+	if player.Dir == Up {
 		player.Gy += -player.velocity
-	} else if player.dir == Down {
+	} else if player.Dir == Down {
 		player.Gy += player.velocity
-	} else if player.dir == Left {
+	} else if player.Dir == Left {
 		player.Gx += -player.velocity
-	} else if player.dir == Right {
+	} else if player.Dir == Right {
 		player.Gx += player.velocity
 	}
 
@@ -185,13 +186,13 @@ func (player *Player) EndAnim() {
 }
 
 func (player *Player) UpdatePosition() {
-	if player.dir == Up {
+	if player.Dir == Up {
 		player.Y--
-	} else if player.dir == Down {
+	} else if player.Dir == Down {
 		player.Y++
-	} else if player.dir == Left {
+	} else if player.Dir == Left {
 		player.X--
-	} else if player.dir == Right {
+	} else if player.Dir == Right {
 		player.X++
 	}
 }

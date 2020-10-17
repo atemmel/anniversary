@@ -232,7 +232,7 @@ func (s *SelectionState) GetInputs(g *Game) error {
 	if !s.handanim.selected {
 		for i, r := range s.rects {
 			if p1.In(r) {
-				g.Player.Id = i
+				g.Player.TexId = i
 				g.Ows.SetPlayerTag(i)
 				s.selectedText = g.Ows.PlayerNameTags[i]
 				break
@@ -260,7 +260,7 @@ func (s *SelectionState) GetInputs(g *Game) error {
 		if s.handanim.selected {
 			for i, r := range s.rects {
 				if p1.In(r) {
-					g.Player.Id = i
+					g.Player.TexId = i
 					g.Ows.SetPlayerTag(i)
 					img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
 					s.Draw(g, img)
@@ -274,7 +274,7 @@ func (s *SelectionState) GetInputs(g *Game) error {
 		if !s.handanim.selected {
 			for i, r := range s.rects {
 				if p1.In(r) {
-					g.Player.Id = i
+					g.Player.TexId = i
 					g.Ows.SetPlayerTag(i)
 					s.selectedText = g.Ows.PlayerNameTags[i]
 					s.handanim.Place(r)
@@ -342,6 +342,9 @@ func drawGrid(g *ebiten.Image, screen *ebiten.Image) {
 func (s *SelectionState) ChangeFrom(g *Game) {
 	g.Audio.characterselectPlayer.Pause()
 	g.Audio.characterselectPlayer.Rewind()
+	if g.Client.Active {
+		go g.Client.ReadPlayer()
+	}
 }
 
 func (s *SelectionState) ChangeTo(g *Game) {

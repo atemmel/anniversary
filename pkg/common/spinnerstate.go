@@ -1,6 +1,7 @@
 package common
 
 import(
+	"fmt"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
@@ -21,32 +22,43 @@ const vspace = 10
 type SpinnerState struct {
 	spinnerState *ebiten.Image
 	roll spinnerRoll
+	winningIndex int
+	strs []string
+	completed bool
 }
 
 type spinnerRoll struct {
 	y, dy, ddy, dddy float64
 	y2 float64
+	yTot float64
 	img *ebiten.Image
 	clipped *ebiten.Image
 }
 
-func NewSpinnerState() *SpinnerState {
+func NewSpinnerState(strs []string, winner int) *SpinnerState {
 	s := &SpinnerState{}
 
+	s.completed = false
 	s.roll.dy = 10
 	s.roll.ddy = -0.0001
 	s.roll.dddy = -0.0001
-	SpinnerFont = loadFont(ResourceDir + "Mario-Kart-DS.ttf", spinnerFontSize)
 
-	strs := make([]string, 3)
-	strs[0] = "DUELL"
-	strs[1] = "RED VS BLU"
-	strs[2] = "FREE FOR ALL"
+	if SpinnerFont == nil {
+		SpinnerFont = loadFont(ResourceDir + "Mario-Kart-DS.ttf", spinnerFontSize)
+	}
+
 	img := buildSpinnerTexture(strs)
 	s.roll.img = img
 	w, h := img.Size()
 	s.roll.y2 = -float64(h)
 	s.roll.clipped, _ = ebiten.NewImage(w, h / len(strs) * 3, ebiten.FilterDefault)
+	s.winningIndex = winner
+	s.strs = strs
+
+	riggedDiff := float64((h / len(strs)) * s.winningIndex)
+
+	s.roll.y += riggedDiff
+	s.roll.y2 += riggedDiff
 
 	return s
 }
@@ -115,10 +127,31 @@ func (s *SpinnerState) Update(g *Game) error {
 	if s.roll.dy < 0.1 {
 		s.roll.ddy = 0
 		s.roll.dy = 0
+		if s.completed == false {
+			s.completed = true
+			ytot := s.roll.img.Bounds().Dy()
+			segh := s.roll.img.Bounds().Dy() / len(s.strs)
+			ydupe := int(s.roll.yTot)
+
+			for ydupe > ytot {
+				ydupe -= ytot
+			}
+
+			l := 0
+			for ydupe > segh {
+				ydupe -= segh
+				l++
+			}
+
+			fmt.Println(l, s.strs[l])
+			fmt.Println(s.winningIndex, s.strs[s.winningIndex])
+			fmt.Println(s.roll.yTot)
+		}
 	}
 
 	s.roll.y += s.roll.dy
 	s.roll.y2 += s.roll.dy
+	s.roll.yTot += s.roll.dy
 
 	_, h := s.roll.img.Size()
 	if s.roll.y > float64(h) {
@@ -127,6 +160,7 @@ func (s *SpinnerState) Update(g *Game) error {
 	if s.roll.y2 > float64(h) {
 		s.roll.y2 -= float64(h) * 2
 	}
+
 	return nil
 }
 
