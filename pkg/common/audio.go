@@ -21,6 +21,7 @@ type Audio struct {
 	thudPlayer *audio.Player
 	doorPlayer *audio.Player
 	characterselectPlayer *audio.Player
+	spinPlayer *audio.Player
 }
 
 func (a *Audio) PlayThud() {
@@ -87,11 +88,22 @@ func NewAudio() Audio {
 		panic(err)
 	}
 
+	src, err = loadMp3(ctx, "resources/audio/spin.mp3")
+	if err != nil {
+		panic(err)
+	}
+	loop = audio.NewInfiniteLoop(src, src.Length())
+	spin, err := audio.NewPlayer(ctx, loop)
+	if err != nil {
+		panic(err)
+	}
+
 	player.SetVolume(volume)
 	title.SetVolume(volume)
 	thud.SetVolume(volume)
 	door.SetVolume(volume)
 	characterselect.SetVolume(volume)
+	spin.SetVolume(volume)
 
 	return Audio{
 		ctx,
@@ -100,6 +112,7 @@ func NewAudio() Audio {
 		thud,
 		door,
 		characterselect,
+		spin,
 	}
 }
 

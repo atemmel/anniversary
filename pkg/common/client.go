@@ -17,6 +17,7 @@ type Client struct {
 	playerMap PlayerMap
 
 	Active bool
+	spinData *SpinMessage
 }
 
 type PlayerMap struct {
@@ -26,11 +27,18 @@ type PlayerMap struct {
 
 const (
 	PlayerMsg = 0
+	SpinMsg = 1
 )
 
 type ClientMessage struct {
 	MsgId int
 	Player *Player
+	SpinMsg *SpinMessage
+}
+
+type SpinMessage struct {
+	Strings []string
+	Offset int
 }
 
 type JoinMessage struct {
@@ -48,6 +56,7 @@ func CreateClient() Client {
 			sync.Mutex{},
 		},
 		false,
+		nil,
 	}
 }
 
@@ -128,6 +137,11 @@ func (c *Client) ReadPlayer() {
 				if msg.MsgId == PlayerMsg && msg.Player != nil {
 					player := msg.Player
 					c.updatePlayer(player)
+				} else if msg.MsgId == SpinMsg && msg.SpinMsg != nil {
+					//log.Println("Spinmsg rec", msg.SpinMsg)
+					c.spinData = msg.SpinMsg
+				} else {
+					log.Println("Foreign message")
 				}
 			} else {
 				log.Println(err)

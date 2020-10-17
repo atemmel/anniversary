@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"strings"
 
 	"github.com/atemmel/anniversary/pkg/common"
 	"github.com/bwmarrin/discordgo"
@@ -14,6 +15,7 @@ import (
 // Variables used for command line parameters
 var (
 	Token string
+	server common.Server
 )
 
 func init() {
@@ -36,7 +38,7 @@ func setupDisc(s *discordgo.Session) error {
 }
 
 func serve() {
-	server := common.NewServer()
+	server = common.NewServer()
 	server.Serve()
 }
 
@@ -72,4 +74,26 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "whisper" {
 		startWhisperGame(s)
 	}
+
+	if strings.HasPrefix(m.Content, "spin") {
+		fmt.Println("I want to spin")
+		spin(m.Content)
+	}
+}
+
+func spin(str string) {
+	sm := common.SpinMessage{}
+	strings := strings.Split(str, ",")
+	if len(strings) < 1 {
+		fmt.Println("Too few args")
+		return
+	}
+	strings = strings[1:]
+	if len(strings) < 3 {
+		fmt.Println("Too few args")
+		return
+	}
+	sm.Offset = 0
+	sm.Strings = strings
+	server.SendSpin(sm)
 }

@@ -12,7 +12,7 @@ type Game struct {
 	As GameState
 	Ows *OverworldState
 	Is *IntroState
-	Gss *GroupedSpinnerState
+	Gss *SpinnerState
 	Sel *SelectionState
 	Player Player
 	Client Client
@@ -27,7 +27,7 @@ func CreateGame() *Game {
 	g.Is = NewIntroState()
 	g.Ows = NewOverworldState(g, g.Player.TexId)
 	g.Sel = NewSelectionState()
-	//g.Gss = NewGroupedSpinnerState()
+	g.Gss = nil //NewSpinnerState()
 	g.ChangeState(g.Is)
 	//g.ChangeState(g.Gss)
 	g.Rend = NewRenderer(WindowWidth, WindowHeight)

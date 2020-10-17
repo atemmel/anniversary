@@ -5,6 +5,8 @@ import(
 	"fmt"
 	"math/rand"
 	"github.com/bwmarrin/discordgo"
+	"io/ioutil"
+	"encoding/json"
 )
 
 type Team int
@@ -18,6 +20,10 @@ type WhisperParticipant struct {
 	id string
 	team Team
 	turn int
+}
+
+type Strings struct {
+	Strings []string
 }
 
 func createTeams(ids []string) []WhisperParticipant {
@@ -44,9 +50,18 @@ func createTeams(ids []string) []WhisperParticipant {
 }
 
 func sendStartMessage(s *discordgo.Session, r1, b1 WhisperParticipant) {
-	strs := [...]string{
-		"Jag är small brain",
+	data, err := ioutil.ReadFile("words.json")
+	if err != nil {
+		fmt.Println(err)
 	}
+
+	readstrs := &Strings{}
+	err = json.Unmarshal(data, readstrs)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	strs := readstrs.Strings
 
 	bchan, _ := s.UserChannelCreate(b1.id)
 	rchan, _ := s.UserChannelCreate(r1.id)

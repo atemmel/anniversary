@@ -149,6 +149,24 @@ func (s *Server) broadcast(message Message) {
 	s.connsMutex.Unlock()
 }
 
+func (s *Server) SendSpin(sm SpinMessage) {
+	msg := &ClientMessage{}
+	msg.SpinMsg = &sm
+	msg.MsgId = SpinMsg
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	data = append(data, '\n')
+
+	mesg := Message{}
+	mesg.contents = data
+	s.broadcast(mesg)
+}
+
 func (s *Server) disconnect(conn net.Conn) {
 	msg := ClientMessage{}
 	msg.Player = &Player{}

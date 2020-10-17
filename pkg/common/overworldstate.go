@@ -33,7 +33,7 @@ func NewOverworldState(g *Game, playerId int) *OverworldState {
 		log.Fatal(err)
 	}
 
-  return ows
+	return ows
 }
 
 func (ows *OverworldState) SetPlayerTag(id int) {
@@ -79,6 +79,14 @@ func (o *OverworldState) Update(g *Game) error {
 
 	if g.Client.Active {
 		g.Client.WritePlayer(&g.Player)
+		if g.Client.spinData != nil {
+			sd := g.Client.spinData
+			g.Gss = NewSpinnerState(sd.Strings, sd.Offset)
+			img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
+			o.Draw(g, img)
+			g.ChangeState(NewTransitionState(img, o, g.Gss, 40))
+			g.Client.spinData = nil;
+		}
 	}
 
 	return nil
@@ -107,7 +115,6 @@ func (o *OverworldState) ChangeTo(g *Game) {
 }
 
 func (o *OverworldState) ChangeFrom(g *Game) {
-	g.Audio.audioPlayer.Rewind()
 	g.Audio.audioPlayer.Pause()
 }
 

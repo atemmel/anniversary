@@ -1,7 +1,6 @@
 package common
 
 import(
-	"fmt"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
@@ -25,6 +24,7 @@ type SpinnerState struct {
 	winningIndex int
 	strs []string
 	completed bool
+	ticks int
 }
 
 type spinnerRoll struct {
@@ -39,7 +39,7 @@ func NewSpinnerState(strs []string, winner int) *SpinnerState {
 	s := &SpinnerState{}
 
 	s.completed = false
-	s.roll.dy = 10
+	s.roll.dy = 20
 	s.roll.ddy = -0.0001
 	s.roll.dddy = -0.0001
 
@@ -127,26 +127,16 @@ func (s *SpinnerState) Update(g *Game) error {
 	if s.roll.dy < 0.1 {
 		s.roll.ddy = 0
 		s.roll.dy = 0
-		if s.completed == false {
-			s.completed = true
-			ytot := s.roll.img.Bounds().Dy()
-			segh := s.roll.img.Bounds().Dy() / len(s.strs)
-			ydupe := int(s.roll.yTot)
+	}
 
-			for ydupe > ytot {
-				ydupe -= ytot
-			}
+	if s.roll.dy == 0 {
+		s.ticks++
+	}
 
-			l := 0
-			for ydupe > segh {
-				ydupe -= segh
-				l++
-			}
-
-			fmt.Println(l, s.strs[l])
-			fmt.Println(s.winningIndex, s.strs[s.winningIndex])
-			fmt.Println(s.roll.yTot)
-		}
+	if s.ticks == 180 {
+		img, _ := ebiten.NewImage(WindowWidth, WindowHeight, ebiten.FilterDefault)
+		s.Draw(g, img)
+		g.ChangeState(NewTransitionState(img, s, g.Ows, 40))
 	}
 
 	s.roll.y += s.roll.dy
@@ -169,7 +159,10 @@ func (s *SpinnerState) GetInputs(g *Game) error {
 }
 
 func (s *SpinnerState) ChangeFrom(g *Game) {
+	g.Audio.spinPlayer.Pause()
+	g.Audio.spinPlayer.Rewind()
 }
 
 func (s *SpinnerState) ChangeTo(g *Game) {
+	g.Audio.spinPlayer.Play()
 }
