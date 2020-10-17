@@ -40,6 +40,10 @@ func (ows *OverworldState) SetPlayerTag(id int) {
 	ows.PlayerNameTags[id] = NewNameTag(NameIndexMap[id])
 }
 
+func (ows *OverworldState) CreateNewPlayerTag(id int, str string) {
+	ows.PlayerNameTags[id] = NewNameTag(str)
+}
+
 func holdingSprint() bool {
 	return ebiten.IsKeyPressed(ebiten.KeyShift) || ebiten.IsGamepadButtonPressed(0, ebiten.GamepadButton1)
 }

@@ -130,7 +130,12 @@ func (g *Game) DrawPlayer(player *Player) {
 
 	tagOpt := &ebiten.DrawImageOptions{}
 
-	tag := g.Ows.PlayerNameTags[g.Player.TexId]
+	tag := g.Ows.PlayerNameTags[player.Id]
+	if tag == nil {
+		g.Ows.CreateNewPlayerTag(player.Id, player.Name)
+		tag = g.Ows.PlayerNameTags[player.Id]
+	}
+
 	g.Rend.Draw(&RenderTarget{
 		tagOpt,
 		tag,
